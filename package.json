@@ -12,7 +12,8 @@
     "db:studio": "drizzle-kit studio",
     "db:migrate:test": "dotenv -e .env.test -- drizzle-kit migrate",
     "pretest": "bun run db:migrate:test",
-    "pretest:watch": "bun run db:migrate:test"
+    "pretest:watch": "bun run db:migrate:test",
+    "build": "tsup-node"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.828.0",
@@ -39,6 +40,7 @@
     "drizzle-kit": "^0.31.1",
     "globals": "^16.2.0",
     "prettier": "^3.5.3",
+    "tsup": "^8.5.0",
     "tsx": "^4.20.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.3"
