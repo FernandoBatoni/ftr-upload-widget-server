@@ -8,4 +8,8 @@ services:
       - POSTGRES_PASSWORD=docker
       - POSTGRES_DB=upload
     volumes:
+      - 'pg_data:/bitnami/postgresql'
       - './docker:/docker-entrypoint-initdb.d'
+
+volumes:
+  pg_data:
