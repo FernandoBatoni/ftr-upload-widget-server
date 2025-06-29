@@ -13,6 +13,17 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
+      - name: Configure bun
+        id: configure-bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.0
+
+      - name: Install dependencies
+        id: install-dependencies
+        run: |
+          bun install
+
       - name: Configure AWS credentials
         id: configure-aws-credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -25,11 +36,36 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Set up Docker Buildx
+        id: set-up-docker-buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Generate tag
         id: generate-tag
         run: |
           SHA=$(echo $GITHUB_SHA | head -c7)
           echo "sha=$SHA" >> $GITHUB_OUTPUT
+
+      - name: Build and export image
+        id: build-and-export-image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:test
+
+      - name: Run Trivy vulnerability scanner
+        id: run-trivy-scanner
+        uses: aquasecurity/trivy-action@0.29.0
+        with:
+          image-ref: '${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:test'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
       - name: Build and push image to AWS ECR
         id: build-and-push-image-to-aws-ecr
